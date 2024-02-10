@@ -62,7 +62,7 @@ console.log( username );
 
     This example in most cases is not very efficient, only the set 
     method has constant time value ( time and space required remains constant regardless of input size )
-    All other methods are of logrithmic time value ( grow slowly as input size increases )
+    All other methods are of logarithmic time value ( grow slowly as input size increases )
 */
 
 class mySimpleMap {
@@ -71,7 +71,7 @@ class mySimpleMap {
     }
 
     set( k, v ){
-         this.items.push([ k, v ]);
+        this.items.push([ k, v ]);
     }
 
     get( k ){
@@ -111,10 +111,12 @@ console.log( `Your username is ${ simpleUsername } and your password is ${ simpl
 
 function hash( k ){
     return Array.from( k ).reduce(
-        ( accum, char ) => accum + char.charCodeAt(),
-        0
-    );
+        ( accum, char ) => accum + char.charCodeAt(), 0 );
 }
+
+const h1 = hash( 'Username' );
+console.log( h1 );
+
 
 class hashMap {
     constructor(){
@@ -139,19 +141,101 @@ m1.set( 'Username', 'Jack' );
 console.log( m1.get( 'Username' ));
 
 /*
-    Hashing 
+    Improving our Hashing Function  
+    
+    With our original hash function 
+      - We might get huge index numbers 
+      - What if we only needed to hash a few different words? This would waste space due to how large 
+        of an array is created for even small words 
+      - What if we could limit the size of the index we are getting back from our hashing function? 
+        Solution: Use modulo( % ) to truncate: hash % array.length 
+*/
+
+/* 
+  Note: This function uses Horner's Mehtod to prevent hashing collisions due to the limit of the array 
+        size 
+
+  
 */
 
 function hash2( key, arrayLen ){
-    hash = Array.from( key ).reduce(
-        ( accum, char ) => accum + char.charCodeAt(), 0 );
-    return hash % arrayLen;
+    const H_PRIME = 37;
+    let numKey = Array.from( key ).reduce(
+        ( accum, char ) => accum * H_PRIME + char.charCodeAt(), 0 );
+    return numKey % arrayLen;
 }
 
+const h2 = hash2( 'Username', 10 );
+console.log( h2 );
 
 
+/* 
+    Runtime of a Hash 
+      - Amount of work to hash a key is not related to the number of items in a map 
+      - With our implementation: It is related to the input length of the string 
+        - So we can call it O( k ), where k is the number of characters in the string 
+      - Real-world versions often use part of a string ( ex: first 100 characters )
+        - These could be on O( 1 ) since the length of the key does not effect the 
+          worst case 
+      - We'll assume hash is O( 1 ) in discussion of runtime for hash tables 
+
+    Fast Hashes vs Crypto Hashes 
+    Hash functions for hash tables prioritize: 
+      - speed ( must be fast )
+      - wide distribution ( spread out values so there are fewer collisions )
+    For cryptologic hashes, such as SHA or Bcrypt, prioritize: 
+      - difficulty of reversing output 
+    For crypto uses, always use a proven crypto hash!!! Never your own! 
+*/ 
+
+class HashMapTwo {
+  constructor(){
+    this.items = [];
+  }
+
+  set( k, v ){
+    const hashedKey = hash2( k, 10 );
+    this.items[ hashedKey ] = v;
+  }
+
+  get( k ){
+    const hashedKey = hash2( k, 10 );
+    return this.items[ hashedKey ];
+  }
+}
+
+const m2 = new HashMapTwo();
+
+m2.set( 'Username', 'Chelsea' );
+console.log( m2.get( 'Username' ));
+console.log( m2 );
 
 
-    
+/*
+  Hash Table 
+    - key -> hash function -> value ( this output is then used to store elements in things like an array )
+  
+  What about collisions? 
+  
+  Ex: berry -> 4
+      durian -> 4 
+  ( How would we store both values without overriding eachother )
+
+  Solutions:
+    - Seperate Chaining 
+      - a technique used to resolve collisions in hash tables 
+      - each bucket or slot in a hash table doesn't just hold a single key-value pair but rather 
+        a collection of key-value pairs, typically implemented as a linked-list, array, or another data
+        structure 
+      - when a collision occurs, the new key-value pair is added to the collection associated with the 
+        corresponding bucket 
+      - be careful, if the load factor of the hash table is higher this can lead to longer search times,
+        a higher liklihood of collisions and an overall degradation of the table itself 
+        
+  What is load factor? 
+    - 
+*/
+
+
     
 
